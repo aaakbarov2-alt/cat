@@ -1,0 +1,11 @@
+<section class="py-5 bg-white" id="available-tests">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-5">Available Tests</h2>
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-3"><div class="test-card h-100"><div class="test-icon test-icon-reading"><i class="bi bi-book"></i></div><h4>Reading</h4><p>Original passages with focused comprehension questions.</p><a href="{% url 'exam_list' %}?skill=reading" class="test-link test-link-reading">Start Practice <i class="bi bi-arrow-right"></i></a></div></div>
+      <div class="col-md-6 col-lg-3"><div class="test-card h-100"><div class="test-icon test-icon-listening"><i class="bi bi-headphones"></i></div><h4>Listening</h4><p>Audio recordings with timed objective questions.</p><a href="{% url 'exam_list' %}?skill=listening" class="test-link test-link-listening">Start Practice <i class="bi bi-arrow-right"></i></a></div></div>
+      <div class="col-md-6 col-lg-3"><div class="test-card h-100"><div class="test-icon test-icon-writing"><i class="bi bi-pencil"></i></div><h4>Writing</h4><p>Timed essay practice ready for instructor review.</p><a href="{% url 'exam_list' %}?skill=writing" class="test-link test-link-writing">Start Practice <i class="bi bi-arrow-right"></i></a></div></div>
+      <div class="col-md-6 col-lg-3"><div class="test-card h-100"><div class="test-icon test-icon-speaking"><i class="bi bi-mic"></i></div><h4>Speaking</h4><p>Speaking prompts with audio-response upload.</p><a href="{% url 'exam_list' %}?skill=speaking" class="test-link test-link-speaking">Start Practice <i class="bi bi-arrow-right"></i></a></div></div>
+    </div>
+  </div>
+</section>

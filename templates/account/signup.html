@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Register | IELTS Mock{% endblock %}
+{% block content %}
+<section class="auth-page"><div class="auth-card"><div class="auth-card__header"><span class="auth-card__icon"><i class="bi bi-book"></i></span><h1>Create your account</h1><p>Start preparing for your target IELTS band.</p></div>
+{% if form.non_field_errors %}<div class="auth-alert" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+<form method="post" action="{% url 'account_signup' %}" novalidate>{% csrf_token %}
+<div class="auth-field"><label for="id_username">Username</label><input id="id_username" type="text" name="username" value="{{ form.username.value|default:'' }}" placeholder="Choose a username" autocomplete="username" required>{% for error in form.username.errors %}<p class="auth-error">{{ error }}</p>{% endfor %}</div>
+<div class="auth-field"><label for="id_email">Email</label><input id="id_email" type="email" name="email" value="{{ form.email.value|default:'' }}" placeholder="you@example.com" autocomplete="email" required>{% for error in form.email.errors %}<p class="auth-error">{{ error }}</p>{% endfor %}</div>
+<div class="auth-field"><label for="id_password1">Password</label><input id="id_password1" type="password" name="password1" placeholder="Create a secure password" autocomplete="new-password" required>{% for error in form.password1.errors %}<p class="auth-error">{{ error }}</p>{% endfor %}</div>
+<div class="auth-field"><label for="id_password2">Confirm password</label><input id="id_password2" type="password" name="password2" placeholder="Repeat your password" autocomplete="new-password" required>{% for error in form.password2.errors %}<p class="auth-error">{{ error }}</p>{% endfor %}</div>
+<button class="auth-submit" type="submit">Create Account</button></form><p class="auth-card__switch">Already have an account? <a href="{% url 'account_login' %}">Sign in</a></p></div></section>
+{% include "components/footer.html" %}
+{% endblock %}

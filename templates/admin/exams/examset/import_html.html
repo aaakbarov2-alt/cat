@@ -1,0 +1,51 @@
+{% extends "admin/base_site.html" %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs"><a href="{% url 'admin:index' %}">Home</a> &rsaquo; <a href="{% url 'admin:exams_examset_changelist' %}">Tests</a> &rsaquo; Import HTML</div>
+{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div class="html-import">
+    <header class="html-import__header">
+        <div><p class="html-import__eyebrow">Original file importer</p><h1>Import an HTML test</h1><p>Upload one complete HTML test and preserve its original layout, styling, scripts, questions, and controls.</p></div>
+        <a href="{% url 'admin:exams_examset_add' %}">Build manually instead</a>
+    </header>
+
+    <ol class="html-import__steps" aria-label="Import progress">
+        <li class="{% if not preview_exact %}is-current{% else %}is-complete{% endif %}"><span>{% if preview_exact %}&#10003;{% else %}1{% endif %}</span><div><strong>Upload</strong><small>Choose the HTML file</small></div></li>
+        <li class="{% if preview_exact %}is-current{% endif %}"><span>2</span><div><strong>Review</strong><small>Confirm the original file</small></div></li>
+        <li><span>3</span><div><strong>Save</strong><small>Create the test</small></div></li>
+    </ol>
+
+    {% if preview_exact %}
+    <section class="html-import-card html-import-review">
+        <div class="html-import-card__heading"><div><p class="html-import__eyebrow">Import preview</p><h2>{{ preview_title }}</h2><p>Confirm that this is the complete original HTML document you want to publish.</p></div><span class="html-import-status {% if preview_publish %}is-published{% else %}is-draft{% endif %}">{% if preview_publish %}Will publish{% else %}Will save as draft{% endif %}</span></div>
+        <div class="html-import-summary"><div><strong>Exact</strong><span>HTML rendering</span></div><div><strong>1</strong><span>Original file</span></div><div><strong>{% if preview_publish %}Live{% else %}Draft{% endif %}</strong><span>Initial status</span></div></div>
+        <div class="html-import-preview-list">
+            <article class="html-import-preview-item"><div class="html-import-preview-item__number">1</div><div class="html-import-preview-item__body"><div class="html-import-preview-item__top"><h3>{{ preview_source_name }}</h3><span>{{ preview_file_size|filesizeformat }}</span></div><p>The original markup, styling, scripts, question layout, and internal controls will be preserved inside the protected HTML viewer.</p><div class="html-import-warning">The source experience is preserved. Native answer-by-answer review requires a separate result bridge supplied by the HTML test.</div></div></article>
+        </div>
+        <form method="post">{% csrf_token %}<input type="hidden" name="import_payload" value="{{ import_payload }}"><div class="html-import-actions"><a href="{% url 'admin:exams_examset_import_html' %}">&#8592; Upload again</a><button type="submit" class="default" name="confirm_import" value="1">Confirm import and save</button></div></form>
+    </section>
+    {% else %}
+    <form method="post" enctype="multipart/form-data" class="html-import-card html-import-form">{% csrf_token %}
+        <div class="html-import-form__main">
+            <div class="html-import-card__heading"><div><p class="html-import__eyebrow">Test details</p><h2>Name and classify this test</h2><p>The uploaded document itself stays unchanged.</p></div></div>
+            {% for field in form %}{% if field.name != 'html_files' and field.name != 'publish' %}<div class="html-import-row{% if field.errors %} has-errors{% endif %}">{{ field.label_tag }}{{ field }}{% if field.help_text %}<p class="html-import-help">{{ field.help_text }}</p>{% endif %}{% for error in field.errors %}<p class="html-import-errors">{{ error }}</p>{% endfor %}</div>{% endif %}{% endfor %}
+        </div>
+        <aside class="html-import-form__aside">
+            <p class="html-import__eyebrow">Source file</p><h2>Choose the HTML test</h2><p class="html-import-form__intro">The complete file is stored unchanged and runs only inside the protected test viewer.</p>
+            <div class="html-file-picker{% if form.html_files.errors %} has-errors{% endif %}"><span class="html-file-picker__icon">&#8679;</span>{{ form.html_files }}<strong id="html-file-picker-label">Choose an HTML file</strong><small>One complete HTML or HTM file &middot; maximum 2 MB</small></div>
+            {% for error in form.html_files.errors %}<p class="html-import-errors">{{ error }}</p>{% endfor %}
+            <label class="html-import-publish">{{ form.publish }}<span><strong>{{ form.publish.label }}</strong><small>{{ form.publish.help_text }}</small></span></label>
+            {% for error in form.non_field_errors %}<p class="html-import-errors">{{ error }}</p>{% endfor %}
+            <div class="html-import-safety"><strong>Recommended workflow</strong><p>Import as a draft, open the student test once, then publish it from the Tests page.</p></div>
+        </aside>
+        <footer class="html-import-form__footer"><a href="{% url 'admin:exams_examset_changelist' %}">Cancel</a><button type="submit" class="default">Upload and review</button></footer>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block footer %}{{ block.super }}<script>document.addEventListener('DOMContentLoaded',function(){var input=document.getElementById('id_html_files'),label=document.getElementById('html-file-picker-label');if(input&&label)input.addEventListener('change',function(){label.textContent=input.files.length?input.files[0].name:'Choose an HTML file';});});</script>{% endblock %}

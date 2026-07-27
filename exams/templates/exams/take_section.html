@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+{% load static exam_content %}
+{% block title %}{{ section.get_section_type_display }} | {{ section.exam_set.title }}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/exam-session.css' %}?v=20260717.4"><link rel="stylesheet" href="{% static 'css/exam-retake.css' %}?v=20260717.1"><link rel="stylesheet" href="{% static 'css/speaking-recorder.css' %}?v=20260718.1"><link rel="stylesheet" href="{% static 'css/exam-layout-polish.css' %}?v=20260719.5"><link rel="stylesheet" href="{% static 'css/grouped-questions.css' %}?v=20260719.1"><link rel="stylesheet" href="{% static 'css/listening-worksheet.css' %}?v=20260726.2"><link rel="stylesheet" href="{% static 'css/selection-annotations.css' %}?v=20260719.2"><link rel="stylesheet" href="{% static 'css/exam-content-typography.css' %}?v=20260719.7"><link rel="stylesheet" href="{% static 'css/ielts-question-paper.css' %}?v=20260726.1"><link rel="stylesheet" href="{% static 'css/listening-real-exam.css' %}?v=20260726.1">{% endblock %}
+{% block content %}
+<section id="exam-session" class="exam-session{% if section.section_type == 'reading' and section.passage_text %} exam-session--reading{% endif %}{% if section.section_type == 'listening' %} exam-session--listening{% endif %}">
+    {% if section.section_type == 'reading' and section.passage_text %}
+    <header class="exam-session-header">
+        <div class="exam-session-title"><span>Section {{ section_number }} of {{ section_total }}</span><h1>{{ section.get_section_type_display }}</h1><p>{{ section.exam_set.title }}</p></div>
+        <div class="exam-session-controls">
+            {% if section.section_type == 'reading' and section.passage_text %}<button id="fullscreen-toggle" class="exam-fullscreen-button" type="button" aria-label="Enter fullscreen"><i class="bi bi-arrows-fullscreen"></i><span>Fullscreen</span></button>{% endif %}
+            <div class="exam-timer-wrap"><span>Time remaining</span><strong id="timer" data-seconds="{{ remaining_seconds }}" role="timer" aria-live="off">--:--</strong></div>
+            <form method="post" action="{% url 'retake_exam' attempt.id %}" onsubmit="return confirm('Start this test again? Your unfinished answers in this attempt will be removed.');">{% csrf_token %}<button class="exam-retake-button" type="submit"><i class="bi bi-arrow-repeat"></i><span>Retake</span></button></form>
+        </div>
+    </header>
+    {% endif %}
+
+    {% if section.section_type != 'reading' or not section.passage_text %}<form id="retake-exam-form" method="post" action="{% url 'retake_exam' attempt.id %}" onsubmit="return confirm('Start this test again? Your unfinished answers in this attempt will be removed.');">{% csrf_token %}</form>{% endif %}
+    <form id="exam-form" method="post" enctype="multipart/form-data" class="exam-session-form" autocomplete="off">
+        {% csrf_token %}
+        {% if section.section_type == 'listening' %}<section class="listening-part-banner" aria-label="Listening section instructions"><strong>Part {{ section.order }}</strong><span>Listen to the audio and answer questions {{ first_question_order }}{% if first_question_order != last_question_order %}&ndash;{{ last_question_order }}{% endif %}.</span></section>{% endif %}
+        {% if section.section_type != 'reading' or not section.passage_text %}<div class="exam-utility-bar"><div><span>{{ section.get_section_type_display }} · {{ section.exam_set.title }}</span></div><div class="exam-session-controls"><button id="fullscreen-toggle" class="exam-fullscreen-button" type="button" aria-label="Enter fullscreen"><i class="bi bi-arrows-fullscreen"></i><span>Fullscreen</span></button><div class="exam-timer-wrap"><span>Time remaining</span><strong id="timer" data-seconds="{{ remaining_seconds }}" role="timer" aria-live="off">--:--</strong></div><button class="exam-retake-button" type="submit" form="retake-exam-form"><i class="bi bi-arrow-repeat"></i><span>Retake</span></button></div></div>{% endif %}
+        {% if section.section_type == 'reading' or section.section_type == 'listening' %}
+        <div id="passage-selection-toolbar" class="passage-selection-toolbar" role="toolbar" aria-label="Selected text tools" hidden>
+            <button id="passage-highlight" type="button" title="Highlight selected text"><i class="bi bi-highlighter"></i><span>Highlight</span></button>
+            <button id="passage-add-note" type="button" title="Add a note to selected text"><i class="bi bi-sticky"></i><span>Note</span></button>
+            <button id="passage-clear" type="button" title="Clear all highlights and notes"><i class="bi bi-eraser"></i><span>Clear</span></button>
+        </div>
+        <div id="passage-note-editor" class="passage-note-editor" hidden>
+            <strong>Add note</strong><p id="passage-note-quote"></p><label class="visually-hidden" for="passage-note-text">Your note</label><textarea id="passage-note-text" rows="3" maxlength="500" placeholder="Write a short note about this text..."></textarea><div><button id="passage-note-cancel" type="button">Cancel</button><button id="passage-note-save" type="button">Save note</button></div>
+        </div>
+        {% endif %}
+        <div class="exam-workspace{% if section.section_type == 'reading' and section.passage_text %} exam-workspace--split{% else %} exam-workspace--wide{% endif %}{% if section.section_type == 'listening' %} exam-workspace--listening{% endif %}" id="exam-workspace">
+            {% if section.section_type == 'reading' and section.passage_text %}
+            <aside class="exam-passage" aria-label="Reading passage">
+                <div class="exam-pane-heading exam-pane-heading--title"><span>{{ section.exam_set.title }}</span></div>
+                <div class="exam-passage-text rich-passage-content">{{ section.passage_text|render_rich_text }}</div>
+            </aside>
+            <div id="exam-resizer" class="exam-resizer" role="separator" aria-label="Resize passage and questions" aria-orientation="vertical" tabindex="0"></div>
+            {% endif %}
+
+            <main class="exam-questions" id="question-panel">
+                {% if section.audio_file %}<div class="exam-audio"><div><i class="bi bi-headphones"></i><span><strong>Listening audio</strong><small>Use headphones in a quiet place.</small></span></div><audio controls preload="metadata" src="{{ section.audio_file.url }}">Your browser does not support audio playback.</audio></div>{% endif %}
+                {% for block in question_blocks %}
+                {% if block.kind == 'group' %}
+                {{ block.group|render_question_group }}
+                {% else %}
+                {% with question=block.question %}
+                <fieldset class="exam-question-card" id="question-{{ question.id }}" data-question-id="{{ question.id }}" data-question-order="{{ question.order }}" tabindex="-1">
+                    <legend><span>{{ question.order }}</span><span class="rich-question-prompt">{{ question.prompt|render_rich_text }}</span></legend>
+                    {% if question.question_type == 'mcq' %}
+                    <div class="exam-options">{% for option in question.options %}<label><input type="radio" name="q{{ question.id }}" value="{{ option }}"><span>{{ option }}</span></label>{% endfor %}</div>
+                    {% elif question.question_type == 'matching' and question.options %}
+                    <label class="visually-hidden" for="q{{ question.id }}">Answer for question {{ question.order }}</label><select id="q{{ question.id }}" name="q{{ question.id }}" class="exam-text-input"><option value="">Select an option</option>{% for option in question.options %}<option value="{{ option }}">{{ option }}</option>{% endfor %}</select>
+                    {% elif question.question_type == 'gap' or question.question_type == 'matching' %}
+                    <label class="visually-hidden" for="q{{ question.id }}">Answer for question {{ question.order }}</label><input id="q{{ question.id }}" type="text" name="q{{ question.id }}" class="exam-text-input" spellcheck="false">
+                    {% elif question.question_type == 'speaking' %}
+                    <label class="visually-hidden" for="q{{ question.id }}">Notes for question {{ question.order }}</label><textarea id="q{{ question.id }}" name="q{{ question.id }}" rows="5" class="exam-textarea" placeholder="Optional notes or typed response..."></textarea>
+                    <div class="speaking-upload" data-speaking-recorder><label for="q{{ question.id }}_audio"><i class="bi bi-mic"></i><span><strong>Record or upload your response</strong><small>Record in your browser, or upload MP3, M4A, WAV, WebM, or OGG &middot; maximum 20 MB</small></span></label><div class="speaking-recorder"><button type="button" class="speaking-record-button" aria-pressed="false" aria-label="Start recording"><i class="bi bi-mic-fill"></i></button><div class="speaking-recorder__center"><div class="speaking-waveform" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><span class="speaking-record-status" role="status" aria-live="polite">Tap the microphone to record</span></div><time class="speaking-record-time" aria-label="Recording duration">00:00</time></div><audio class="speaking-record-preview" controls hidden></audio><div class="speaking-upload__divider"><span>or upload a file</span></div><input id="q{{ question.id }}_audio" type="file" name="q{{ question.id }}_audio" accept="audio/mpeg,audio/mp4,audio/wav,audio/webm,audio/ogg,.m4a"></div>
+                    {% else %}
+                    <label class="visually-hidden" for="q{{ question.id }}">Response for question {{ question.order }}</label><textarea id="q{{ question.id }}" name="q{{ question.id }}" rows="8" class="exam-textarea" placeholder="Write your response here..."></textarea>
+                    {% endif %}
+                </fieldset>
+                {% endwith %}
+                {% endif %}
+                {% endfor %}
+                {% if section.section_type != 'reading' and section.section_type != 'listening' %}<div class="exam-submit-area"><p><i class="bi bi-shield-check"></i> Your answers are submitted securely when you finish this section.</p><button id="submit-section" type="submit">Submit section <i class="bi bi-arrow-right"></i></button></div>{% endif %}
+            </main>
+        </div>
+
+        {% if section.section_type == 'reading' or section.section_type == 'listening' %}
+        <footer class="exam-question-nav" aria-label="Question navigation">
+            <div class="exam-question-numbers">
+                {% for question in section.questions.all %}<button type="button" class="exam-question-number{% if forloop.first %} is-current{% endif %}" data-target="question-{{ question.id }}" aria-label="Go to question {{ question.order }}">{{ question.order }}</button>{% endfor %}
+            </div>
+            <div class="exam-question-actions">
+                <button id="question-prev" type="button" class="exam-nav-button" disabled><i class="bi bi-arrow-left"></i><span>Previous</span></button>
+                <button id="question-next" type="button" class="exam-nav-button"><span>Next</span><i class="bi bi-arrow-right"></i></button>
+                <button id="submit-section" type="submit" class="exam-bottom-submit">Submit section <i class="bi bi-send"></i></button>
+            </div>
+        </footer>
+        {% endif %}
+    </form>
+</section>
+{% endblock %}
+{% block extra_js %}
+<script>
+(() => {
+    const session = document.getElementById('exam-session');
+    const form = document.getElementById('exam-form');
+    const submitButton = document.getElementById('submit-section');
+    const timer = document.getElementById('timer');
+    let remaining = Math.max(0, Number(timer.dataset.seconds) || 0);
+    let submitted = false;
+
+    const renderTimer = () => {
+        const minutes = Math.floor(remaining / 60);
+        const seconds = remaining % 60;
+        timer.textContent = `${minutes}:${String(seconds).padStart(2, '0')}`;
+        timer.classList.toggle('is-warning', remaining <= 300 && remaining > 0);
+    };
+    const submitAutomatically = () => {
+        if (submitted) return;
+        submitted = true;
+        submitButton.disabled = true;
+        submitButton.textContent = 'Submitting...';
+        form.requestSubmit();
+    };
+    renderTimer();
+    if (remaining === 0) submitAutomatically();
+    const interval = window.setInterval(() => {
+        remaining = Math.max(0, remaining - 1);
+        renderTimer();
+        if (remaining === 0) {
+            window.clearInterval(interval);
+            submitAutomatically();
+        }
+    }, 1000);
+    form.addEventListener('submit', (event) => {
+        if (event.defaultPrevented) return;
+        if (!submitted && !window.confirm('Submit this section? You cannot return to change these answers.')) {
+            event.preventDefault();
+            return;
+        }
+        submitted = true;
+        submitButton.disabled = true;
+    });
+
+    const numberButtons = [...document.querySelectorAll('.exam-question-number')];
+    const cards = numberButtons.map((button) => document.getElementById(button.dataset.target));
+    const questionPanel = document.getElementById('question-panel');
+    const previousButton = document.getElementById('question-prev');
+    const nextButton = document.getElementById('question-next');
+    let currentIndex = 0;
+
+    const setCurrent = (index) => {
+        if (!numberButtons.length) return;
+        currentIndex = Math.max(0, Math.min(index, numberButtons.length - 1));
+        numberButtons.forEach((button, buttonIndex) => button.classList.toggle('is-current', buttonIndex === currentIndex));
+        previousButton.disabled = currentIndex === 0;
+        nextButton.disabled = currentIndex === numberButtons.length - 1;
+    };
+    const goToQuestion = (index) => {
+        setCurrent(index);
+        cards[currentIndex].scrollIntoView({behavior: 'smooth', block: 'center'});
+        cards[currentIndex].focus({preventScroll: true});
+    };
+    const updateAnswered = (card, index) => {
+        const radioAnswered = Boolean(card.querySelector('input[type="radio"]:checked'));
+        const textAnswered = [...card.querySelectorAll('input[type="text"], textarea, select')].some((input) => input.value.trim());
+        const fileAnswered = [...card.querySelectorAll('input[type="file"]')].some((input) => input.files.length);
+        const answered = radioAnswered || textAnswered || fileAnswered;
+        numberButtons[index].classList.toggle('is-answered', answered);
+        card.classList.toggle('is-answered', answered);
+    };
+    numberButtons.forEach((button, index) => button.addEventListener('click', () => goToQuestion(index)));
+    cards.forEach((card, index) => {
+        card.querySelectorAll('input, textarea, select').forEach((input) => {
+            input.addEventListener('input', () => updateAnswered(card, index));
+            input.addEventListener('change', () => updateAnswered(card, index));
+        });
+    });
+    if (previousButton) previousButton.addEventListener('click', () => goToQuestion(currentIndex - 1));
+    if (nextButton) nextButton.addEventListener('click', () => goToQuestion(currentIndex + 1));
+    if (numberButtons.length && 'IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+            const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+            if (visible) setCurrent(cards.indexOf(visible.target));
+        }, {root: questionPanel, threshold: [0.45, 0.7]});
+        cards.forEach((card) => observer.observe(card));
+    }
+
+    const fullscreenButton = document.getElementById('fullscreen-toggle');
+    if (fullscreenButton) {
+        fullscreenButton.addEventListener('click', async () => {
+            if (!document.fullscreenElement) await session.requestFullscreen();
+            else await document.exitFullscreen();
+        });
+        document.addEventListener('fullscreenchange', () => {
+            const active = Boolean(document.fullscreenElement);
+            fullscreenButton.querySelector('i').className = active ? 'bi bi-fullscreen-exit' : 'bi bi-arrows-fullscreen';
+            fullscreenButton.querySelector('span').textContent = active ? 'Exit fullscreen' : 'Fullscreen';
+        });
+    }
+
+    const workspace = document.getElementById('exam-workspace');
+    const resizer = document.getElementById('exam-resizer');
+    if (resizer) {
+        let resizing = false;
+        resizer.addEventListener('pointerdown', (event) => {
+            resizing = true;
+            resizer.setPointerCapture(event.pointerId);
+            document.body.classList.add('is-resizing-exam');
+        });
+        resizer.addEventListener('pointermove', (event) => {
+            if (!resizing) return;
+            const bounds = workspace.getBoundingClientRect();
+            const percentage = ((event.clientX - bounds.left) / bounds.width) * 100;
+            workspace.style.setProperty('--passage-width', `${Math.max(30, Math.min(70, percentage))}%`);
+        });
+        const stopResize = () => {
+            resizing = false;
+            document.body.classList.remove('is-resizing-exam');
+        };
+        resizer.addEventListener('pointerup', stopResize);
+        resizer.addEventListener('pointercancel', stopResize);
+    }
+
+    const annotationAreas = [...document.querySelectorAll('.exam-passage-text, .exam-questions')];
+    const selectionToolbar = document.getElementById('passage-selection-toolbar');
+    const highlightButton = document.getElementById('passage-highlight');
+    const addNoteButton = document.getElementById('passage-add-note');
+    const clearPassageButton = document.getElementById('passage-clear');
+    const noteEditor = document.getElementById('passage-note-editor');
+    const noteQuote = document.getElementById('passage-note-quote');
+    const noteText = document.getElementById('passage-note-text');
+    const noteSaveButton = document.getElementById('passage-note-save');
+    const noteCancelButton = document.getElementById('passage-note-cancel');
+    let selectedPassageRange = null;
+    let lastPointer = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    const nativeHighlightsSupported = Boolean(window.CSS?.highlights && window.Highlight);
+    const nativePassageHighlights = nativeHighlightsSupported ? new Highlight() : null;
+    if (nativePassageHighlights) CSS.highlights.set('ielts-passage-highlight', nativePassageHighlights);
+
+    const selectionIsInAnnotationArea = (range) => {
+        if (!annotationAreas.length || !range) return false;
+        const container = range.commonAncestorContainer.nodeType === Node.TEXT_NODE
+            ? range.commonAncestorContainer.parentElement
+            : range.commonAncestorContainer;
+        return annotationAreas.some((area) => area.contains(container));
+    };
+    const hideSelectionToolbar = () => {
+        if (selectionToolbar) selectionToolbar.hidden = true;
+    };
+    const showSelectionToolbar = (event = null) => {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+            hideSelectionToolbar();
+            return;
+        }
+        const range = selection.getRangeAt(0);
+        if (!selection.toString().trim() || !selectionIsInAnnotationArea(range)) {
+            hideSelectionToolbar();
+            return;
+        }
+        selectedPassageRange = range.cloneRange();
+        const selectionBox = range.getBoundingClientRect();
+        if (event && Number.isFinite(event.clientX) && Number.isFinite(event.clientY)) {
+            lastPointer = { x: event.clientX, y: event.clientY };
+        } else if (selectionBox.width || selectionBox.height) {
+            lastPointer = { x: selectionBox.right, y: selectionBox.bottom };
+        }
+        const toolbarWidth = 166;
+        selectionToolbar.style.left = `${Math.max(10, Math.min(window.innerWidth - toolbarWidth - 10, lastPointer.x + 12))}px`;
+        selectionToolbar.style.top = `${Math.max(10, Math.min(window.innerHeight - 48, lastPointer.y + 12))}px`;
+        selectionToolbar.hidden = false;
+    };
+    const addHighlight = (range, note = '') => {
+        if (!range || range.collapsed) return null;
+        if (nativePassageHighlights) {
+            const savedRange = range.cloneRange();
+            nativePassageHighlights.add(savedRange);
+            return savedRange;
+        }
+        const mark = document.createElement('mark');
+        mark.className = 'exam-highlight';
+        if (note) {
+            mark.dataset.note = 'true';
+            mark.title = note;
+        }
+        try {
+            range.surroundContents(mark);
+        } catch (error) {
+            const contents = range.extractContents();
+            mark.appendChild(contents);
+            range.insertNode(mark);
+        }
+        return mark;
+    };
+    const clearPassageAnnotations = () => {
+        if (nativePassageHighlights) nativePassageHighlights.clear();
+        annotationAreas.forEach((area) => {
+            area.querySelectorAll('.exam-highlight').forEach((mark) => mark.replaceWith(...mark.childNodes));
+        });
+        noteEditor.hidden = true;
+        hideSelectionToolbar();
+        window.getSelection()?.removeAllRanges();
+    };
+
+    if (selectionToolbar && annotationAreas.length) {
+        annotationAreas.forEach((area) => area.addEventListener('pointermove', (event) => { lastPointer = { x: event.clientX, y: event.clientY }; }));
+        const capturePassageSelection = (event) => {
+            if (event) lastPointer = { x: event.clientX, y: event.clientY };
+            window.setTimeout(() => showSelectionToolbar(event), 0);
+        };
+        document.addEventListener('mouseup', capturePassageSelection);
+        document.addEventListener('touchend', capturePassageSelection, { passive: true });
+        document.addEventListener('keyup', capturePassageSelection);
+        document.addEventListener('selectionchange', () => {
+            const selection = window.getSelection();
+            if (!selection || selection.rangeCount === 0 || selection.isCollapsed || !selection.toString().trim()) {
+                hideSelectionToolbar();
+                return;
+            }
+            const range = selection.getRangeAt(0);
+            if (selectionIsInAnnotationArea(range)) {
+                window.requestAnimationFrame(() => showSelectionToolbar());
+            } else {
+                hideSelectionToolbar();
+            }
+        });
+        document.addEventListener('scroll', hideSelectionToolbar, true);
+        selectionToolbar.addEventListener('mousedown', (event) => event.preventDefault());
+        highlightButton.addEventListener('click', () => {
+            addHighlight(selectedPassageRange);
+            hideSelectionToolbar();
+            window.getSelection()?.removeAllRanges();
+        });
+        addNoteButton.addEventListener('click', () => {
+            if (!selectedPassageRange) return;
+            noteQuote.textContent = `“${selectedPassageRange.toString().trim().slice(0, 160)}”`;
+            noteText.value = '';
+            noteEditor.style.left = `${Math.max(10, Math.min(window.innerWidth - 310, lastPointer.x + 12))}px`;
+            noteEditor.style.top = `${Math.max(10, Math.min(window.innerHeight - 230, lastPointer.y + 16))}px`;
+            noteEditor.hidden = false;
+            hideSelectionToolbar();
+            noteText.focus();
+        });
+        noteCancelButton.addEventListener('click', () => {
+            noteEditor.hidden = true;
+            window.getSelection()?.removeAllRanges();
+        });
+        noteSaveButton.addEventListener('click', () => {
+            const text = noteText.value.trim();
+            if (!text || !selectedPassageRange) return;
+            addHighlight(selectedPassageRange, text);
+            noteEditor.hidden = true;
+            window.getSelection()?.removeAllRanges();
+        });
+        clearPassageButton.addEventListener('click', clearPassageAnnotations);
+    }
+
+    document.querySelectorAll('[data-speaking-recorder]').forEach((container) => {
+        const fileInput = container.querySelector('input[type="file"]');
+        const recordButton = container.querySelector('.speaking-record-button');
+        const status = container.querySelector('.speaking-record-status');
+        const recordTime = container.querySelector('.speaking-record-time');
+        const preview = container.querySelector('.speaking-record-preview');
+        let recorder = null;
+        let stream = null;
+        let chunks = [];
+        let previewUrl = null;
+        let timerInterval = null;
+        let recordingStartedAt = null;
+
+        const setStatus = (message, isRecording = false) => {
+            status.textContent = message;
+            status.classList.toggle('is-recording', isRecording);
+        };
+        const stopTracks = () => {
+            if (stream) stream.getTracks().forEach((track) => track.stop());
+            stream = null;
+        };
+        const renderRecordingTime = () => {
+            const elapsed = Math.max(0, Math.floor((Date.now() - recordingStartedAt) / 1000));
+            recordTime.textContent = `${Math.floor(elapsed / 60)}:${String(elapsed % 60).padStart(2, '0')}`;
+        };
+        const stopTimer = () => {
+            if (timerInterval) window.clearInterval(timerInterval);
+            timerInterval = null;
+        };
+        const finishRecording = () => {
+            const type = recorder?.mimeType || 'audio/webm';
+            const recording = new File([new Blob(chunks, { type })], `speaking-response-${Date.now()}.webm`, { type: 'audio/webm' });
+            const transfer = new DataTransfer();
+            transfer.items.add(recording);
+            fileInput.files = transfer.files;
+            fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            previewUrl = URL.createObjectURL(recording);
+            preview.src = previewUrl;
+            preview.hidden = false;
+            recordButton.classList.remove('is-recording');
+            recordButton.setAttribute('aria-pressed', 'false');
+            recordButton.setAttribute('aria-label', 'Record again');
+            setStatus('Recording ready to submit');
+            stopTimer();
+            stopTracks();
+            recorder = null;
+            chunks = [];
+        };
+
+        if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+            recordButton.disabled = true;
+            recordButton.title = 'Your browser does not support audio recording.';
+            setStatus('Recording is not supported in this browser. You can still upload audio.');
+            return;
+        }
+
+        recordButton.addEventListener('click', async () => {
+            if (recorder?.state === 'recording') {
+                recorder.stop();
+                return;
+            }
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                chunks = [];
+                recorder = new MediaRecorder(stream);
+                recorder.addEventListener('dataavailable', (event) => {
+                    if (event.data.size) chunks.push(event.data);
+                });
+                recorder.addEventListener('stop', finishRecording, { once: true });
+                recorder.start();
+                recordButton.classList.add('is-recording');
+                recordButton.setAttribute('aria-pressed', 'true');
+                recordButton.setAttribute('aria-label', 'Stop recording');
+                setStatus('Recording… click Stop when you are finished.', true);
+                recordingStartedAt = Date.now();
+                renderRecordingTime();
+                timerInterval = window.setInterval(renderRecordingTime, 1000);
+            } catch (error) {
+                stopTracks();
+                stopTimer();
+                setStatus('Microphone access was not granted. You can still upload an audio file.');
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (!fileInput.files.length) return;
+            if (recorder?.state === 'recording') recorder.stop();
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            previewUrl = URL.createObjectURL(fileInput.files[0]);
+            preview.src = previewUrl;
+            preview.hidden = false;
+            recordButton.setAttribute('aria-label', 'Record again');
+            setStatus('Audio file ready to submit');
+            stopTimer();
+        });
+        form.addEventListener('submit', (event) => {
+            if (recorder?.state !== 'recording') return;
+            event.preventDefault();
+            recorder.stop();
+            setStatus('Recording saved. Submit the section again when ready.');
+        }, true);
+    });
+})();
+</script>
+{% endblock %}

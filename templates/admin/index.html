@@ -1,0 +1,54 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}Dashboard | {{ site_title }}{% endblock %}
+
+{% block content %}
+<div class="ielts-admin-dashboard">
+    <header class="ielts-admin-dashboard__heading">
+        <div><h1>Dashboard</h1><p>A clear view of your IELTS Mock platform.</p></div>
+        <nav aria-label="Dashboard shortcuts" class="ielts-admin-dashboard__tabs">
+            <a class="is-active" href="{% url 'admin:index' %}" aria-current="page">Overview</a>
+            <a href="{% url 'admin:exams_studentattempt_changelist' %}">Results</a>
+            <a href="{% url 'admin:sites_site_changelist' %}">Settings</a>
+        </nav>
+    </header>
+
+    <section class="ielts-admin-metrics" aria-label="Platform overview">
+        {% for metric in dashboard_metrics %}
+        <a class="ielts-admin-metric" href="{{ metric.link }}">
+            <div class="ielts-admin-metric__main"><div><span>{{ metric.label }}</span><strong>{{ metric.value }}</strong></div><i class="material-symbols-outlined" aria-hidden="true">{{ metric.icon }}</i></div>
+            <small>{{ metric.detail }}</small>
+        </a>
+        {% endfor %}
+    </section>
+
+    <section class="ielts-admin-panel ielts-admin-chart" aria-labelledby="activity-heading">
+        <header><div><h2 id="activity-heading">Activity overview</h2><p>Student attempts and active students across the last 7 days.</p></div><span>Last 7 days</span></header>
+        {% if has_chart_activity %}
+        <div class="ielts-admin-chart__legend"><span><i></i> Student attempts</span><span><i></i> Active students</span></div>
+        <div class="ielts-admin-chart__canvas" role="img" aria-label="Seven-day activity line chart">
+            <svg viewBox="0 0 680 170" preserveAspectRatio="none" aria-hidden="true">
+                <line x1="18" y1="18" x2="662" y2="18"></line><line x1="18" y1="71" x2="662" y2="71"></line><line x1="18" y1="124" x2="662" y2="124"></line><line x1="18" y1="152" x2="662" y2="152"></line>
+                <polyline class="ielts-admin-chart__attempts" points="{{ attempt_points }}"></polyline>
+                <polyline class="ielts-admin-chart__students" points="{{ active_points }}"></polyline>
+            </svg>
+            <div class="ielts-admin-chart__labels">{% for label in chart_labels %}<span>{{ label }}</span>{% endfor %}</div>
+        </div>
+        {% else %}
+        <div class="ielts-admin-empty"><i class="material-symbols-outlined" aria-hidden="true">show_chart</i><div><strong>No activity yet</strong><p>Activity will appear here when students start tests.</p></div></div>
+        {% endif %}
+    </section>
+
+    <section class="ielts-admin-panel ielts-admin-tests" aria-labelledby="recent-tests-heading">
+        <header><div><h2 id="recent-tests-heading">Recent tests</h2><p>Your newest test content and its real activity.</p></div><a href="{% url 'admin:exams_examset_changelist' %}">View all tests <span aria-hidden="true">→</span></a></header>
+        {% if recent_tests %}
+        <div class="ielts-admin-table-wrap"><table><thead><tr><th>Test title</th><th>Skill</th><th>Questions</th><th>Attempts</th><th>Status</th><th>Created</th></tr></thead><tbody>
+            {% for test in recent_tests %}<tr><th><a href="{% url 'admin:exams_examset_change' test.pk %}">{{ test.title }}</a></th><td>{{ test.get_category_display }}</td><td>{{ test.question_count }}</td><td>{{ test.attempt_count }}</td><td><span class="ielts-admin-status {% if test.is_published %}is-live{% else %}is-draft{% endif %}">{% if test.is_published %}Published{% else %}Draft{% endif %}</span></td><td>{{ test.created_at|date:"M j, Y" }}</td></tr>{% endfor %}
+        </tbody></table></div>
+        {% else %}
+        <div class="ielts-admin-empty"><i class="material-symbols-outlined" aria-hidden="true">description</i><div><strong>No tests created yet</strong><p>Create your first test to start building the practice library.</p><a href="{% url 'admin:exams_examset_add' %}">Create a test</a></div></div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

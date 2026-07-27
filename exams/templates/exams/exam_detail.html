@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ exam_set.title }} | IELTS Mock{% endblock %}
+{% block meta_description %}Review the sections, timing, and instructions for {{ exam_set.title }}.{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/exam-catalogue.css' %}?v=20260717.2">{% endblock %}
+{% block content %}
+<section class="exam-intro-page">
+    <div class="exam-intro-shell">
+        <a class="exam-back" href="{% url 'exam_list' %}"><i class="bi bi-arrow-left"></i> Back to tests</a>
+        <div class="exam-intro-grid">
+            <main class="exam-intro-card">
+                <span class="exam-intro-label">IELTS practice test</span>
+                <h1>{{ exam_set.title }}</h1>
+                <p>{{ exam_set.description|default:"A timed IELTS practice test designed to help you understand your current performance." }}</p>
+                {% if exam_set.delivery_mode == 'exact_html' %}<p><strong>Original HTML test:</strong> this opens with the uploaded design, layout, questions, and controls intact.</p>{% endif %}
+                <div class="exam-intro-stats">
+                    {% if exam_set.delivery_mode == 'exact_html' %}
+                    <div><i class="bi bi-filetype-html"></i><span><strong>Exact</strong> HTML</span></div>
+                    <div><i class="bi bi-aspect-ratio"></i><span><strong>Original</strong> layout</span></div>
+                    <div><i class="bi bi-arrows-fullscreen"></i><span><strong>Full</strong> screen</span></div>
+                    {% else %}
+                    <div><i class="bi bi-layers"></i><span><strong>{{ sections|length }}</strong> sections</span></div>
+                    <div><i class="bi bi-question-circle"></i><span><strong>{{ question_count }}</strong> questions</span></div>
+                    <div><i class="bi bi-stopwatch"></i><span><strong>{{ total_minutes }}</strong> minutes</span></div>
+                    {% endif %}
+                </div>
+                {% if exam_set.delivery_mode != 'exact_html' %}<h2>Test sections</h2>
+                <div class="exam-section-list">
+                    {% for section in sections %}
+                    <article><span>{{ forloop.counter }}</span><div><strong>{{ section.get_section_type_display }}</strong><small>{{ section.questions.count }} question{{ section.questions.count|pluralize }} · {{ section.time_limit_minutes }} minutes</small></div></article>
+                    {% empty %}<p>No sections have been published for this test.</p>{% endfor %}
+                </div>{% endif %}
+            </main>
+            <aside class="exam-rules-card">
+                <span class="exam-rules-icon"><i class="bi bi-info-circle"></i></span>
+                <h2>Before you begin</h2>
+                <ul>
+                    <li>The timer continues if you refresh or close the page.</li>
+                    <li>Submit each section before its time expires.</li>
+                    <li>Objective answers are graded immediately.</li>
+                    <li>Writing and speaking responses may require instructor review.</li>
+                </ul>
+                {% if is_ready %}
+                <form method="post" action="{% url 'start_exam' exam_set.id %}">{% csrf_token %}<button type="submit">{% if active_attempt %}Continue test{% else %}Begin test{% endif %} <i class="bi bi-arrow-right"></i></button></form>
+                {% else %}
+                <button type="button" disabled>Test unavailable</button>
+                <p class="exam-unavailable">This test still needs content from an administrator.</p>
+                {% endif %}
+            </aside>
+        </div>
+    </div>
+</section>
+{% endblock %}

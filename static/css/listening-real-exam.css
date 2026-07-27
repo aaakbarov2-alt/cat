@@ -1,0 +1,172 @@
+/* Computer-delivered IELTS Listening rhythm: calm white canvas, plain paper questions. */
+.exam-session--listening { background: #fff; }
+.exam-session--listening .exam-session-form { display: flex; flex-direction: column; background: #fff; }
+.exam-session--listening .exam-utility-bar {
+    order: -1;
+    position: sticky;
+    z-index: 30;
+    top: 0;
+    position: relative;
+    min-height: 4rem;
+    max-width: none;
+    padding: .45rem 1.5rem;
+    border-bottom: 1px solid #e1e5ea;
+    background: #fff;
+}
+.exam-session--listening .exam-utility-bar > div:first-child > span { color: #263545; font-size: .82rem; }
+.exam-session--listening .exam-utility-bar .exam-session-controls { position: static; }
+.exam-session--listening .exam-utility-bar .exam-timer-wrap {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    gap: .35rem;
+    align-items: baseline;
+    color: #050505;
+    font-size: .95rem;
+    font-weight: 700;
+    text-align: left;
+    transform: translate(-50%, -50%);
+}
+.exam-session--listening .exam-utility-bar .exam-timer-wrap > span { color: #050505; font-size: .95rem; }
+.exam-session--listening .exam-utility-bar .exam-timer-wrap strong { color: #050505; font-size: .95rem; }
+.exam-session--listening .exam-utility-bar .exam-session-controls { margin-left: auto; }
+.exam-session--listening .exam-utility-bar .exam-fullscreen-button,
+.exam-session--listening .exam-utility-bar .exam-retake-button {
+    min-width: 2.35rem;
+    min-height: 2.35rem;
+    padding: .45rem .7rem;
+    border: 1px solid #d8dee5;
+    border-radius: 50%;
+    color: #24354a;
+    background: #fff;
+    font-size: .78rem;
+}
+.exam-session--listening .exam-utility-bar .exam-fullscreen-button span,
+.exam-session--listening .exam-utility-bar .exam-retake-button span { display: none; }
+.listening-part-banner {
+    display: grid;
+    gap: .5rem;
+    margin: 1rem .55rem 0;
+    padding: .72rem 1rem;
+    border: 1px solid #d5d8d0;
+    border-radius: .35rem;
+    color: #050505;
+    background: #f3f3ee;
+    font-size: 1rem;
+    line-height: 1.35;
+}
+.listening-part-banner strong { font-size: 1rem; }
+.exam-session--listening .exam-workspace--listening {
+    max-width: none !important;
+    padding: 1.9rem clamp(1.25rem, 2.25vw, 2rem) 5rem !important;
+    background: #fff !important;
+}
+.exam-session--listening .exam-workspace--listening .exam-questions { max-width: none !important; margin: 0; }
+.exam-session--listening .exam-workspace--listening .exam-audio {
+    max-width: none !important;
+    margin: 0 0 1.5rem !important;
+    padding: .7rem 0;
+    border: 0;
+    border-bottom: 1px solid #dfe3e8;
+    border-radius: 0;
+    background: transparent;
+}
+.exam-session--listening .exam-workspace--listening .exam-question-group {
+    min-height: 0;
+    margin: 0 0 2.25rem !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+}
+.exam-session--listening .exam-workspace--listening .exam-group-instructions { margin-bottom: 1.5rem !important; }
+.exam-session--listening .exam-workspace--listening .exam-group-instructions h2 { margin-bottom: .8rem; font-size: 1.05rem !important; }
+.exam-session--listening .exam-workspace--listening .exam-group-sheet { font-size: 1rem !important; }
+.exam-session--listening .exam-workspace--listening .exam-group-sheet h2,
+.exam-session--listening .exam-workspace--listening .exam-group-sheet h3 { font-size: 1.08rem !important; text-align: left; }
+.exam-session--listening .exam-workspace--listening .exam-inline-number { display: none; }
+.exam-session--listening .exam-workspace--listening .exam-inline-input {
+    width: 9rem;
+    height: 1.7rem;
+    padding: 0 .4rem;
+    border: 1px solid #151515;
+    border-radius: .25rem;
+    box-shadow: none;
+    text-align: center;
+}
+.exam-session--listening .exam-workspace--listening .exam-inline-input::placeholder { color: #050505; opacity: 1; font-weight: 700; }
+.exam-session--listening .exam-workspace--listening .exam-group-sheet table { border-color: #bac9df; }
+.exam-session--listening .exam-workspace--listening .exam-group-sheet th { background: #dbe8fa; }
+.exam-session--listening .exam-workspace--listening .exam-group-sheet th,
+.exam-session--listening .exam-workspace--listening .exam-group-sheet td { border-color: #c3d0e1; }
+.exam-session--listening .exam-workspace--listening .exam-question-card {
+    margin: 0 0 1.85rem;
+    padding: 0;
+}
+.exam-session--listening .exam-workspace--listening .exam-question-card legend {
+    gap: .55rem;
+    margin-bottom: .85rem;
+    color: #050505;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.45;
+}
+.exam-session--listening .exam-workspace--listening .exam-question-card legend > span:first-child {
+    display: inline-grid;
+    width: auto;
+    min-width: 1.35rem;
+    height: 1.35rem;
+    padding: 0 .16rem;
+    place-items: center;
+    border: 0;
+    border-radius: .25rem;
+    color: #050505;
+    background: transparent;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+}
+.exam-session--listening .exam-workspace--listening .exam-question-card:focus legend > span:first-child {
+    border: 2px solid #10243e;
+}
+.exam-session--listening .exam-workspace--listening .exam-options {
+    gap: .58rem;
+    padding-left: .65rem;
+}
+.exam-session--listening .exam-workspace--listening .exam-options label {
+    gap: .7rem;
+    padding: 0;
+    border: 0 !important;
+    color: #050505;
+    background: transparent !important;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.35;
+}
+.exam-session--listening .exam-workspace--listening .exam-options input[type="radio"] {
+    width: 1rem;
+    height: 1rem;
+    margin-top: .18rem;
+    accent-color: #1b2737;
+}
+.exam-session--listening .exam-workspace--listening .exam-options label:has(input:checked) {
+    color: #050505;
+    font-weight: 600;
+}
+.exam-session--listening .exam-question-nav { border-top-color: #dfe3e8; background: #fff; box-shadow: none; }
+.exam-session--listening .exam-question-number { border: 0; border-radius: 0; color: #10243e; background: transparent; }
+.exam-session--listening .exam-question-number.is-current { border: 2px solid #10243e; border-radius: .3rem; color: #10243e; background: #fff; box-shadow: none; transform: none; }
+.exam-session--listening .exam-question-number.is-answered { color: #10243e; background: #eef1f3; }
+.exam-session--listening .exam-nav-button { border: 0; border-radius: .35rem; color: #fff; background: #555; }
+.exam-session--listening .exam-nav-button:disabled { color: #fff; background: #dcdfe2; opacity: 1; }
+.exam-session--listening .exam-bottom-submit { border: 0; border-radius: .35rem; color: #444; background: #e5e7e7; }
+@media (max-width: 650px) {
+    .exam-session--listening .exam-utility-bar { min-height: 3.5rem; padding: .45rem .8rem; }
+    .exam-session--listening .exam-utility-bar > div:first-child { display: none; }
+    .exam-session--listening .exam-utility-bar .exam-timer-wrap { left: .8rem; font-size: .82rem; transform: translateY(-50%); }
+    .exam-session--listening .exam-utility-bar .exam-timer-wrap > span,
+    .exam-session--listening .exam-utility-bar .exam-timer-wrap strong { font-size: .82rem; }
+    .exam-session--listening .exam-utility-bar .exam-retake-button { display: none; }
+    .listening-part-banner { margin: .65rem .5rem 0; }
+    .exam-session--listening .exam-workspace--listening { padding: 1.35rem 1rem 5rem !important; }
+}

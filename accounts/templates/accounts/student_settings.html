@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Profile Settings | IELTS Mock{% endblock %}
+{% block meta_description %}Manage your IELTS Mock profile and study goals.{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=20260717.4">{% endblock %}
+
+{% block content %}
+<div class="settings-page">
+    <div class="settings-shell">
+        <header class="settings-heading">
+            <a href="{% url 'student_dashboard' %}"><i class="bi bi-arrow-left"></i> Back to dashboard</a>
+            <span>Account</span>
+            <h1>Profile settings</h1>
+            <p>Keep your personal details and IELTS study goals up to date.</p>
+        </header>
+
+        <div class="settings-layout">
+            <aside class="settings-summary">
+                <span class="settings-avatar">{{ request.user.username|first|upper }}</span>
+                <h2>{{ request.user.get_full_name|default:request.user.username }}</h2>
+                <p>@{{ request.user.username }}</p>
+                <div><span>Current target</span><strong>Band {{ profile.target_band|floatformat:1 }}</strong></div>
+                <div><span>Daily goal</span><strong>{{ profile.daily_goal }} minutes</strong></div>
+            </aside>
+
+            <section class="settings-card">
+                <div class="settings-card-heading"><h2>Personal information</h2><p>Your username cannot be changed.</p></div>
+                <form method="post" class="settings-form" novalidate>
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}<div class="settings-errors">{{ form.non_field_errors }}</div>{% endif %}
+                    <div class="settings-row">
+                        <div class="settings-field"><label for="{{ form.first_name.id_for_label }}">First name</label>{{ form.first_name }}{{ form.first_name.errors }}</div>
+                        <div class="settings-field"><label for="{{ form.last_name.id_for_label }}">Last name</label>{{ form.last_name }}{{ form.last_name.errors }}</div>
+                    </div>
+                    <div class="settings-account-row"><div><span>Email address</span><strong>{{ request.user.email }}</strong></div><a href="{% url 'account_email' %}">Manage email</a></div>
+                    <div class="settings-account-row"><div><span>Password</span><strong>Protected account</strong></div><a href="{% url 'account_change_password' %}">Change password</a></div>
+                    <div class="settings-divider"></div>
+                    <div class="settings-card-heading"><h2>Study goals</h2><p>These values appear on your student dashboard.</p></div>
+                    <div class="settings-row">
+                        <div class="settings-field"><label for="{{ form.target_band.id_for_label }}">Target band score</label>{{ form.target_band }}<small>Choose a score from 4.0 to 9.0 in 0.5-band increments.</small>{{ form.target_band.errors }}</div>
+                        <div class="settings-field"><label for="{{ form.daily_goal.id_for_label }}">Daily practice (minutes)</label>{{ form.daily_goal }}<small>Between 10 and 300 minutes.</small>{{ form.daily_goal.errors }}</div>
+                    </div>
+                    <div class="settings-actions"><a href="{% url 'student_dashboard' %}">Cancel</a><button type="submit">Save changes</button></div>
+                </form>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}

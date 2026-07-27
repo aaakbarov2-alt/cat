@@ -1,0 +1,17 @@
+{% load static %}
+<section class="landing-hero" aria-labelledby="landing-title">
+  <div class="landing-shell landing-hero__grid">
+    <div class="landing-hero__copy">
+      <p class="landing-eyebrow">IELTS practice, built for exam day</p>
+      <h1 id="landing-title">Practice IELTS.<br><span>Fix weak areas.</span></h1>
+      <p class="landing-hero__lead">Timed practice, clear scoring, and passage evidence for objective answers.</p>
+      <div class="landing-actions">
+        <a href="{% url 'account_signup' %}" class="landing-button landing-button--primary">Start free</a>
+        <a href="{% url 'exam_list' %}" class="landing-button landing-button--secondary">Browse tests <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+      </div>
+    </div>
+    <figure class="landing-hero__visual">
+      <img src="{% static 'images/dashboard-real.png' %}?v=3" alt="IELTS Mock dashboard showing skill progress, study goals, and recent tests" width="1996" height="1280" fetchpriority="high">
+    </figure>
+  </div>
+</section>

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}IELTS Mock Tests | IELTS Mock{% endblock %}
+{% block meta_description %}Browse available IELTS mock tests and continue your practice progress.{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/exam-catalogue.css' %}?v=20260717.1"><link rel="stylesheet" href="{% static 'css/catalogue-density.css' %}?v=20260718.2"><link rel="stylesheet" href="{% static 'css/catalogue-compact.css' %}?v=20260719.1"><link rel="stylesheet" href="{% static 'css/catalogue-card-type.css' %}?v=20260719.1">{% endblock %}
+
+{% block content %}
+<section class="catalogue-hero">
+    <div class="catalogue-hero__content">
+        <span>Practice centre</span>
+        <h1>IELTS Mock Tests</h1>
+        <p>Choose a test, practise under realistic time limits, and review your results.</p>
+        <div class="catalogue-summary" aria-label="Test catalogue summary">
+            <div><strong>{{ total }}</strong><span>Available test{{ total|pluralize }}</span></div>
+            <div><strong>{{ counts.in_progress }}</strong><span>In progress</span></div>
+            <div><strong>{{ counts.completed }}</strong><span>Completed</span></div>
+        </div>
+    </div>
+</section>
+
+<section class="catalogue-page">
+    <div class="catalogue-shell">
+        <nav class="catalogue-filters" aria-label="Filter mock tests">
+            <div class="catalogue-filter-group">
+                <span>Test type</span>
+                <div>
+                    <a href="?skill=all&amp;status={{ status_filter }}" {% if skill_filter == 'all' %}class="is-active" aria-current="page"{% endif %}><i class="bi bi-grid"></i>All tests <b>{{ all_total }}</b></a>
+                    <a href="?skill=reading&amp;status={{ status_filter }}" {% if skill_filter == 'reading' %}class="is-active" aria-current="page"{% endif %}><i class="bi bi-book"></i>Reading <b>{{ skill_counts.reading }}</b></a>
+                    <a href="?skill=listening&amp;status={{ status_filter }}" {% if skill_filter == 'listening' %}class="is-active" aria-current="page"{% endif %}><i class="bi bi-headphones"></i>Listening <b>{{ skill_counts.listening }}</b></a>
+                    <a href="?skill=writing&amp;status={{ status_filter }}" {% if skill_filter == 'writing' %}class="is-active" aria-current="page"{% endif %}><i class="bi bi-pencil"></i>Writing <b>{{ skill_counts.writing }}</b></a>
+                    <a href="?skill=speaking&amp;status={{ status_filter }}" {% if skill_filter == 'speaking' %}class="is-active" aria-current="page"{% endif %}><i class="bi bi-mic"></i>Speaking <b>{{ skill_counts.speaking }}</b></a>
+                    <a href="?skill=full&amp;status={{ status_filter }}" {% if skill_filter == 'full' %}class="is-active" aria-current="page"{% endif %}><i class="bi bi-layers"></i>Full Mock Test <b>{{ skill_counts.full }}</b></a>
+                </div>
+            </div>
+            <div class="catalogue-filter-group">
+                <span>Progress</span>
+                <div>
+                <a href="?skill={{ skill_filter }}&amp;status=all" {% if status_filter == 'all' %}class="is-active" aria-current="page"{% endif %}>All <b>{{ total }}</b></a>
+                <a href="?skill={{ skill_filter }}&amp;status=not_started" {% if status_filter == 'not_started' %}class="is-active" aria-current="page"{% endif %}>Not started <b>{{ counts.not_started }}</b></a>
+                <a href="?skill={{ skill_filter }}&amp;status=in_progress" {% if status_filter == 'in_progress' %}class="is-active" aria-current="page"{% endif %}>In progress <b>{{ counts.in_progress }}</b></a>
+                <a href="?skill={{ skill_filter }}&amp;status=completed" {% if status_filter == 'completed' %}class="is-active" aria-current="page"{% endif %}>Completed <b>{{ counts.completed }}</b></a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="catalogue-main">
+            <div class="catalogue-heading">
+                <div><span>Test library</span><h2>{% if skill_filter == 'reading' %}Reading tests{% elif skill_filter == 'listening' %}Listening tests{% elif skill_filter == 'writing' %}Writing tests{% elif skill_filter == 'speaking' %}Speaking tests{% elif skill_filter == 'full' %}Full mock tests{% elif status_filter == 'not_started' %}Tests not started{% elif status_filter == 'in_progress' %}Tests in progress{% elif status_filter == 'completed' %}Completed tests{% else %}All mock tests{% endif %}</h2></div>
+                <a href="{% url 'student_dashboard' %}"><i class="bi bi-grid"></i> Dashboard</a>
+            </div>
+
+            {% if exam_data %}
+            <section class="catalogue-search-panel" aria-label="Search and filter tests">
+                <label class="catalogue-search-box" for="catalogue-search"><i class="bi bi-search"></i><input id="catalogue-search" type="search" placeholder="Search tests by title..." autocomplete="off"></label>
+                <div class="catalogue-part-filters" role="group" aria-label="Filter by passage part"><span>Part:</span><button class="is-active" type="button" data-part="all" aria-pressed="true">All</button><button type="button" data-part="p1" aria-pressed="false">P1</button><button type="button" data-part="p2" aria-pressed="false">P2</button><button type="button" data-part="p3" aria-pressed="false">P3</button></div>
+            </section>
+            <div class="catalogue-grid catalogue-grid--compact" id="catalogue-test-grid">
+                {% for item in exam_data %}
+                <article class="catalogue-compact-card" data-title="{{ item.exam_set.title|lower }}" data-part="{{ item.part }}">
+                    <span class="visually-hidden"><strong>{{ item.section_count }}</strong> section{{ item.section_count|pluralize }}; <strong>{{ item.question_count }}</strong> question{{ item.question_count|pluralize }}; <strong>{{ item.total_minutes }}</strong> min{% if item.status == 'in_progress' %}; Continue test{% endif %}</span>
+                    <span class="catalogue-compact-icon"><i class="bi {% if item.exam_set.category == 'reading' %}bi-book{% elif item.exam_set.category == 'listening' %}bi-headphones{% elif item.exam_set.category == 'writing' %}bi-pencil{% elif item.exam_set.category == 'speaking' %}bi-mic{% else %}bi-layers{% endif %}"></i></span>
+                    <div class="catalogue-compact-body"><h3>{{ item.exam_set.title }}</h3><div class="catalogue-compact-tags"><span>{{ item.exam_set.get_category_display }}</span>{% if item.part != 'all' %}<b>{{ item.part|upper }}</b>{% endif %}{% if item.status == 'completed' %}<em class="is-complete">Completed{% if item.score %} · {{ item.score }}{% endif %}</em>{% elif item.status == 'in_progress' %}<em class="is-progress">In progress</em>{% endif %}</div><p>{% if item.is_exact %}<i class="bi bi-filetype-html"></i> Exact HTML{% else %}<i class="bi bi-stopwatch"></i> {{ item.total_minutes }} min <span>·</span> {{ item.question_count }} question{{ item.question_count|pluralize }}{% endif %}</p></div>
+                    {% if item.status == 'completed' %}<a class="catalogue-compact-action" href="{% url 'results' item.attempt.id %}" aria-label="View results for {{ item.exam_set.title }}"><i class="bi bi-arrow-right"></i></a>{% else %}<a class="catalogue-compact-action" href="{% url 'exam_detail' item.exam_set.id %}" aria-label="{% if item.status == 'in_progress' %}Continue test{% else %}View test{% endif %}: {{ item.exam_set.title }}"><i class="bi bi-arrow-right"></i></a>{% endif %}
+                </article>
+                {% endfor %}
+            </div>
+            <div class="catalogue-search-empty" id="catalogue-search-empty" hidden><i class="bi bi-search"></i><strong>No matching tests</strong><span>Try another title or passage part.</span></div>
+            {% else %}
+            <div class="catalogue-empty">
+                <span><i class="bi bi-search"></i></span>
+                <h3>No tests in this category</h3>
+                <p>{% if total %}Try another filter to see the rest of your mock tests.{% else %}Mock tests will appear here after they are published.{% endif %}</p>
+                {% if total %}<a href="?status=all">Show all tests</a>{% else %}<a href="{% url 'student_dashboard' %}">Return to dashboard</a>{% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/catalogue-search.js' %}?v=20260719.1"></script>{% endblock %}

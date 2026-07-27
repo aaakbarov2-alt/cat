@@ -1,0 +1,52 @@
+/* ==========================
+   CARD BASE STYLE
+========================== */
+.card-base {
+  background: #fff;
+  padding: 40px 30px;
+  border-radius: 20px;
+  text-align: center;
+  transition: .3s;
+  box-shadow: 0 15px 40px rgba(0,0,0,.05);
+}
+
+.card-base:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 25px 60px rgba(0,0,0,.12);
+}
+
+/* ==========================
+   FEATURES
+========================== */
+.feature-card {
+  /* Instead of composes, just reuse */
+  background: linear-gradient(to bottom, #ffffff, #f0f4ff);
+  padding: 40px 30px;
+  border-radius: 20px;
+  text-align: center;
+  transition: .3s;
+  box-shadow: 0 15px 40px rgba(0,0,0,.05);
+}
+
+.feature-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 25px 60px rgba(79,70,229,.25);
+}
+
+/* ==========================
+   AVAILABLE TESTS
+========================== */
+.test-card {
+  background: linear-gradient(to bottom, #ffffff, #f0f4ff);
+  padding: 40px 30px;
+  border-radius: 20px;
+  text-align: center;
+  transition: .3s;
+  box-shadow: 0 15px 40px rgba(0,0,0,.05);
+}
+
+.test-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 25px 60px rgba(79,70,229,.25);
+}
+.info-page{min-height:650px;padding:72px 0;background:linear-gradient(135deg,#f7faff,#eef5ff)}.info-page__inner{max-width:880px}.info-page__eyebrow{display:inline-block;margin:0 0 14px;padding:7px 13px;border-radius:20px;background:#e7f0ff;color:#1264e8;font-size:12px;font-weight:600}.info-page h1{font-size:40px;font-weight:700;letter-spacing:-1px;margin:0 0 12px}.info-page__lead{font-size:16px;color:#5a6678;margin:0 0 34px}.info-page__cards,.info-page__article{background:#fff;border:1px solid #e5ebf3;border-radius:14px;padding:12px 28px;box-shadow:0 15px 40px rgba(16,33,62,.06)}.info-page details{padding:18px 0;border-bottom:1px solid #edf0f5}.info-page details:last-child{border:0}.info-page summary{cursor:pointer;font-size:15px;font-weight:600}.info-page details p,.info-page__article p{font-size:14px;line-height:1.75;color:#536074;margin:12px 0 0}.info-page__article{padding:28px}.info-page__article h2{font-size:18px;margin:26px 0 0}.info-page__article h2:first-child{margin-top:0}.info-page a{color:#1264e8}@media(max-width:576px){.info-page{padding:48px 0}.info-page h1{font-size:32px}.info-page__cards,.info-page__article{padding:10px 20px}}

@@ -1,0 +1,46 @@
+# Virtual environments
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Django
+media/
+staticfiles/
+*.sqlite3
+
+# Environment variables
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
+
+# Generated backups
+backups/
+
+# JavaScript dependencies
+node_modules/
+
+# Generated artifacts and local QA output
+outputs/
+generated/
+release/
+.codex-work/
+.codex_spreadsheet_work/
+.xlsx_builder/
+
+# Local agent/editor metadata
+.agents/
+.codex/
+.cursor/
+.impeccable/

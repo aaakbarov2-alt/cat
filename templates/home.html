@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}IELTS Mock | Focused practice for exam day{% endblock %}
+{% block meta_description %}Practise IELTS in realistic timed sessions, review every answer, and understand what to improve next.{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/landing-v2.css' %}?v=20260720.5">{% endblock %}
+
+{% block content %}
+{% include 'components/hero.html' %}
+{% include 'components/features.html' %}
+{% include 'components/available_tests.html' %}
+{% include 'components/how_it_works.html' %}
+{% include 'components/cta.html' %}
+{% include 'components/footer.html' %}
+
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load static exam_content %}
+{% block title %}Results | {{ attempt.exam_set.title }}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/exam-session.css' %}?v=20260719.3"><link rel="stylesheet" href="{% static 'css/review-mode.css' %}?v=20260719.2">{% if use_split_reading_review %}<link rel="stylesheet" href="{% static 'css/reading-review.css' %}?v=20260719.7">{% endif %}<link rel="stylesheet" href="{% static 'css/exam-content-typography.css' %}?v=20260719.10">{% endblock %}
+{% block content %}
+{% if use_split_reading_review %}
+<section class="reader-review-page" id="reader-review">
+    <header class="reader-review-head">
+        <div class="reader-review-title"><a href="{% url 'student_dashboard' %}" aria-label="Back to dashboard"><i class="bi bi-arrow-left"></i></a><span class="reader-head-icon"><i class="bi bi-book"></i></span><div><small>Reading review</small><h1>{{ attempt.exam_set.title }}</h1></div></div>
+        <article><span class="reader-head-icon"><i class="bi bi-bullseye"></i></span><div><small>Raw score</small><strong>{{ correct_count }} / {{ total_gradable }}</strong></div></article>
+        <article><span class="reader-head-icon reader-head-icon--green"><i class="bi bi-award"></i></span><div><small>{% if reading_band_estimated %}Estimated band{% else %}Reading band{% endif %}</small><strong>{{ reading_band|floatformat:1 }} / 9</strong>{% if reading_band_estimated %}<em>Equivalent to {{ reading_equivalent }} / 40</em>{% endif %}</div></article>
+        <form method="post" action="{% url 'start_exam' attempt.exam_set.id %}">{% csrf_token %}<button type="submit"><i class="bi bi-arrow-repeat"></i> Retake</button></form>
+    </header>
+
+    <main class="reader-review-workspace">
+        <section class="reader-passage-pane" aria-label="Reading passage">
+            <div class="reader-pane-heading reader-pane-heading--title"><h2>{{ attempt.exam_set.title }}</h2></div>
+            {% for section in reading_passages %}<article class="reader-passage" data-passage-section="{{ section.id }}"{% if not forloop.first %} hidden{% endif %}><div class="reader-passage-content rich-passage-content">{{ section.passage_text|render_rich_text }}</div></article>{% endfor %}
+        </section>
+        <section class="reader-question-pane" aria-label="Answer review">
+            {% for answer in reading_review_answers %}
+            <article class="reader-question-review{% if forloop.first %} is-active{% endif %}" data-review-index="{{ forloop.counter0 }}" data-section-id="{{ answer.question.section_id }}" data-reference="{{ answer.question.passage_reference }}" data-state="{% if answer.is_correct is True %}correct{% elif answer.is_correct is False %}incorrect{% else %}pending{% endif %}">
+                <div class="reader-review-card">
+                <p class="reader-question-count">Question {{ forloop.counter }} of {{ reading_review_answers|length }}</p>
+                <div class="reader-question-prompt rich-question-prompt">{{ answer.question.prompt|render_rich_text }}</div>
+                <div class="reader-answer-content">
+                    <div class="reader-answer-grid"><div><small>Your answer</small><strong class="{% if answer.is_correct is True %}is-correct{% elif answer.is_correct is False %}is-wrong{% endif %}">{{ answer.answer_text|default:"No answer submitted" }}</strong></div><div><small>Correct answer</small><strong class="is-correct">{{ answer.question.correct_answer|default:"Instructor reviewed" }}</strong></div></div>
+                </div>
+                <section class="reader-evidence-content">{% if answer.question.passage_reference %}<blockquote>{{ answer.question.passage_reference }}</blockquote><button class="reader-show-evidence" type="button"><i class="bi bi-box-arrow-up-right"></i> Show in passage</button>{% else %}<p>No exact passage sentence has been attached to this question.</p>{% endif %}</section>
+                </div>
+            </article>
+            {% endfor %}
+        </section>
+    </main>
+
+    <footer class="reader-review-footer reader-review-footer--no-legend">
+        <nav class="reader-question-nav" aria-label="Review questions">{% for answer in reading_review_answers %}<button type="button" data-review-target="{{ forloop.counter0 }}" class="{% if answer.is_correct is True %}is-correct{% elif answer.is_correct is False %}is-incorrect{% else %}is-pending{% endif %}{% if forloop.first %} is-current{% endif %}" aria-label="Review question {{ forloop.counter }}">{{ forloop.counter }}</button>{% endfor %}</nav>
+        <div class="reader-review-pager"><button id="reader-previous" type="button"><i class="bi bi-arrow-left"></i> Previous</button><button id="reader-next" type="button">Next <i class="bi bi-arrow-right"></i></button></div>
+    </footer>
+</section>
+<script src="{% static 'js/reading-review.js' %}?v=20260719.7"></script>
+{% else %}
+<section class="results-page"><div class="results-shell">
+    <a class="exam-back" href="{% url 'student_dashboard' %}"><i class="bi bi-arrow-left"></i> Dashboard</a>
+    <header class="results-header"><span>Test completed</span><h1>{{ attempt.exam_set.title }}</h1><p>Your responses are available below. Instructor-reviewed answers update after grading.</p></header>
+    <div class="results-summary">
+        <article><span class="result-summary-icon result-summary-icon--blue"><i class="bi bi-bullseye"></i></span><div><span>Objective score</span><strong>{% if total_gradable %}{{ correct_count }} / {{ total_gradable }}{% else %}Not applicable{% endif %}</strong></div></article>
+        <article><span class="result-summary-icon result-summary-icon--green"><i class="bi bi-award"></i></span><div><span>Manual band average</span><strong>{% if average_manual_score is not None %}{{ average_manual_score|floatformat:1 }} / 9{% else %}Awaiting review{% endif %}</strong></div></article>
+        <article><span class="result-summary-icon result-summary-icon--orange"><i class="bi bi-hourglass-split"></i></span><div><span>Awaiting review</span><strong>{{ pending_manual }}</strong></div></article>
+    </div>
+    <section class="answer-review"><div class="answer-review-heading"><span>Answer review</span><h2>Your responses</h2></div>
+        {% for answer in answers %}<article class="answer-card"><div class="answer-number">{{ answer.question.order }}</div><div class="answer-body"><div class="rich-question-prompt review-question-prompt">{{ answer.question.prompt|render_rich_text }}</div><div class="answer-response"><span>Your answer</span><p>{{ answer.answer_text|default:"No typed answer submitted"|linebreaksbr }}</p>{% if answer.audio_response %}<audio controls preload="metadata" src="{{ answer.audio_response.url }}">Your browser does not support audio playback.</audio>{% endif %}</div>{% if answer.is_correct is not None %}{% if answer.is_correct %}<span class="answer-status answer-status--correct"><i class="bi bi-check-circle"></i> Correct</span>{% else %}<span class="answer-status answer-status--wrong"><i class="bi bi-x-circle"></i> Incorrect</span>{% endif %}{% elif answer.manual_score is not None %}<span class="answer-status answer-status--graded"><i class="bi bi-award"></i> Band {{ answer.manual_score|floatformat:1 }}</span>{% else %}<span class="answer-status answer-status--pending"><i class="bi bi-hourglass-split"></i> Pending instructor review</span>{% endif %}</div></article>{% empty %}<div class="results-empty">No answers were submitted for this test.</div>{% endfor %}
+    </section>
+    <div class="results-actions"><a href="{% url 'exam_list' %}">Browse more tests</a><form method="post" action="{% url 'start_exam' attempt.exam_set.id %}">{% csrf_token %}<button type="submit" class="results-primary"><i class="bi bi-arrow-repeat"></i> Retake test</button></form><a href="{% url 'student_dashboard' %}">View dashboard</a></div>
+</div></section>
+{% endif %}
+{% endblock %}

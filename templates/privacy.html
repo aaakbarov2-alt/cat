@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Privacy Policy | IELTS Mock{% endblock %}
+{% block content %}<section class="info-page"><div class="container info-page__inner"><p class="info-page__eyebrow">Legal</p><h1>Privacy Policy</h1><p class="info-page__lead">How IELTS Mock handles account, practice, and uploaded-response data.</p><div class="info-page__article">
+<h2>Information we collect</h2><p>We store information you provide when creating or updating an account, test answers, progress, scores, support messages, and speaking audio you choose to upload.</p>
+<h2>How information is used</h2><p>Data is used to authenticate accounts, deliver timed tests, calculate progress, allow authorised instructors to review responses, prevent abuse, and answer support requests.</p>
+<h2>Audio and manual review</h2><p>Uploaded speaking responses and written responses may be accessed by authorised administrators or instructors for grading. Do not include unnecessary sensitive personal information in a test response.</p>
+<h2>Service providers and security</h2><p>Hosting, database, email, and storage providers may process data only as needed to operate the service. We use access controls, HTTPS, secure cookies, and operational backups, but no internet service can guarantee absolute security.</p>
+<h2>Retention and your choices</h2><p>Practice records are retained while needed to provide progress history and operate the service. You may request access, correction, export, or deletion by contacting <a href="mailto:{{ site_support_email }}">{{ site_support_email }}</a>. Some records may be retained when required for security or legal obligations.</p>
+<h2>Cookies</h2><p>Essential cookies are used for authentication, security, and session continuity. The application does not enable advertising cookies by default.</p>
+<h2>Policy updates</h2><p>This policy may change as the service develops. Material revisions will be posted on this page.</p>
+</div></div></section>{% include "components/footer.html" %}{% endblock %}

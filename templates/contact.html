@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Contact Support | IELTS Mock{% endblock %}
+{% block meta_description %}Contact IELTS Mock support for help with your account, practice tests, or results.{% endblock %}
+{% block content %}
+<section class="contact-page"><div class="container contact-page__layout"><div class="contact-page__intro"><p class="info-page__eyebrow">Support</p><h1>How can we help?</h1><p>Send us a message about your account or the platform. Our support team will reply by email.</p><div class="contact-page__detail"><i class="bi bi-envelope"></i><div><strong>Email support</strong><span>{{ support_email|default:"support@ieltsmock.com" }}</span></div></div></div>
+<div class="contact-card"><form method="post" novalidate>{% csrf_token %}{{ form.website }}
+  <div class="contact-field"><label for="id_name">Name</label><input id="id_name" name="name" value="{{ form.name.value|default:'' }}" autocomplete="name" required>{% for error in form.name.errors %}<p>{{ error }}</p>{% endfor %}</div>
+  <div class="contact-field"><label for="id_email">Email</label><input id="id_email" type="email" name="email" value="{{ form.email.value|default:'' }}" autocomplete="email" required>{% for error in form.email.errors %}<p>{{ error }}</p>{% endfor %}</div>
+  <div class="contact-field"><label for="id_subject">Subject</label><input id="id_subject" name="subject" value="{{ form.subject.value|default:'' }}" required>{% for error in form.subject.errors %}<p>{{ error }}</p>{% endfor %}</div>
+  <div class="contact-field"><label for="id_message">Message</label><textarea id="id_message" name="message" rows="6" required>{{ form.message.value|default:'' }}</textarea>{% for error in form.message.errors %}<p>{{ error }}</p>{% endfor %}</div>
+  {% for error in form.website.errors %}<p class="contact-form-error">{{ error }}</p>{% endfor %}<button type="submit">Send Message</button>
+</form></div></div></section>
+{% include "components/footer.html" %}
+{% endblock %}

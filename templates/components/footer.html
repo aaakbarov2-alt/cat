@@ -1,0 +1,14 @@
+<footer class="site-footer">
+  <div class="container">
+    <div class="site-footer__grid">
+      <div class="site-footer__intro">
+        <a class="site-footer__brand" href="{% url 'home' %}" aria-label="IELTS Mock home"><span class="brand-icon"><i class="bi bi-book" aria-hidden="true"></i></span>IELTS Mock</a>
+        <p>Focused practice for your<br>IELTS preparation.</p>
+      </div>
+      <nav aria-label="Footer quick links"><h3>Quick Links</h3><a href="{% url 'home' %}">Home</a><a href="{% url 'exam_list' %}">Exams</a><a href="{% url 'home' %}#about">About</a></nav>
+      <nav aria-label="Footer support links"><h3>Support</h3><a href="{% url 'contact' %}">Contact Us</a><a href="{% url 'faq' %}">FAQ</a><a href="{% url 'privacy' %}">Privacy Policy</a><a href="{% url 'terms' %}">Terms of Use</a></nav>
+      <div><h3>Stay Connected</h3>{% if social_facebook_url or social_instagram_url or social_youtube_url or social_telegram_url %}<div class="site-footer__socials">{% if social_facebook_url %}<a href="{{ social_facebook_url }}" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="bi bi-facebook"></i></a>{% endif %}{% if social_instagram_url %}<a href="{{ social_instagram_url }}" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="bi bi-instagram"></i></a>{% endif %}{% if social_youtube_url %}<a href="{{ social_youtube_url }}" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="bi bi-youtube"></i></a>{% endif %}{% if social_telegram_url %}<a href="{{ social_telegram_url }}" target="_blank" rel="noopener noreferrer" aria-label="Telegram"><i class="bi bi-telegram"></i></a>{% endif %}</div>{% else %}<a class="site-footer__email" href="mailto:{{ site_support_email }}">{{ site_support_email }}</a>{% endif %}</div>
+    </div>
+    <p class="site-footer__copyright">&copy; {% now "Y" %} IELTS Mock. All rights reserved.</p>
+  </div>
+</footer>

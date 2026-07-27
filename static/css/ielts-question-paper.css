@@ -1,0 +1,105 @@
+/* Shared question-paper treatment for every native IELTS section. */
+.exam-questions {
+    color: #050505;
+    font-family: Arial, "Helvetica Neue", sans-serif;
+}
+.exam-question-card {
+    margin: 0 0 1.75rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+.exam-question-card legend {
+    display: flex;
+    align-items: flex-start;
+    gap: .55rem;
+    margin: 0 0 .72rem;
+    color: #050505;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.55;
+}
+.exam-question-card legend > span:first-child {
+    display: inline;
+    width: auto;
+    height: auto;
+    flex: 0 0 auto;
+    padding: 0;
+    border-radius: 0;
+    color: #050505;
+    background: transparent;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.55;
+}
+.exam-question-card legend > .rich-question-prompt {
+    color: #050505;
+    font-size: inherit;
+    font-weight: inherit;
+}
+.exam-options {
+    gap: .3rem;
+    padding-left: 2.1rem;
+}
+.exam-options label {
+    display: flex;
+    align-items: flex-start;
+    gap: .65rem;
+    padding: .12rem 0;
+    border: 0;
+    border-radius: 0;
+    color: #050505;
+    background: transparent;
+    font-size: .95rem;
+    line-height: 1.45;
+}
+.exam-options label:hover,
+.exam-options label:has(input:checked) {
+    border-color: transparent;
+    color: #050505;
+    background: transparent;
+}
+.exam-options input {
+    width: 1rem;
+    height: 1rem;
+    flex: 0 0 1rem;
+    margin: .2rem 0 0;
+    accent-color: #111;
+}
+.exam-text-input,
+.exam-textarea {
+    width: calc(100% - 2.1rem);
+    margin-left: 2.1rem;
+    border: 1px solid #aeb4bd;
+    border-radius: 2px;
+    color: #050505;
+    background: #fff;
+    font-size: .95rem;
+}
+.exam-text-input:focus,
+.exam-textarea:focus {
+    border-color: #175fd2;
+    box-shadow: 0 0 0 2px rgb(23 95 210 / .15);
+}
+.exam-questions .exam-group-instructions h2 {
+    color: #050505;
+    font-weight: 700;
+}
+.exam-questions .exam-group-instructions p {
+    color: #050505;
+}
+.exam-session--reading .exam-questions,
+.exam-session--reading .exam-question-card legend,
+.exam-session--reading .exam-options label {
+    font-size: 1rem;
+}
+@media (max-width: 760px) {
+    .exam-question-card { margin-bottom: 1.4rem; }
+    .exam-question-card legend { font-size: .95rem; }
+    .exam-options { padding-left: 1.75rem; }
+    .exam-options label { font-size: .9rem; }
+    .exam-text-input,
+    .exam-textarea { width: calc(100% - 1.75rem); margin-left: 1.75rem; }
+}

@@ -1,0 +1,10 @@
+.hero {
+    padding: 80px 0;
+}
+
+.hero-dashboard {
+    max-width: 700px;
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 30px 60px rgba(0,0,0,.12);
+}

@@ -1,0 +1,49 @@
+{% extends "admin/base_site.html" %}
+
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'admin:index' %}">Home</a> &rsaquo; <a href="{% url 'admin:exams_examset_changelist' %}">Tests</a> &rsaquo; Import Excel</div>{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div class="html-import excel-import">
+    <header class="html-import__header">
+        <div><p class="html-import__eyebrow">Structured test importer</p><h1>Import an Excel test</h1><p>Create editable sections, grouped worksheets, questions, answers, and passage references from one validated workbook.</p></div>
+        <a class="excel-template-download" href="{% url 'admin:exams_examset_excel_template' %}">&#8595; Download Excel template</a>
+    </header>
+    <ol class="html-import__steps" aria-label="Import progress">
+        <li class="{% if not preview %}is-current{% else %}is-complete{% endif %}"><span>{% if preview %}&#10003;{% else %}1{% endif %}</span><div><strong>Complete template</strong><small>Test, Sections, Groups, Questions</small></div></li>
+        <li class="{% if preview %}is-current{% endif %}"><span>2</span><div><strong>Review</strong><small>Validate workbook content</small></div></li>
+        <li><span>3</span><div><strong>Save</strong><small>Create editable test</small></div></li>
+    </ol>
+
+    {% if preview %}
+    <section class="html-import-card html-import-review">
+        <div class="html-import-card__heading"><div><p class="html-import__eyebrow">Workbook preview</p><h2>{{ preview.title }}</h2><p>{{ preview.description|default:"No test description supplied." }}</p></div><span class="html-import-status {% if preview.publish %}is-published{% else %}is-draft{% endif %}">{% if preview.publish %}Will publish{% else %}Will save as draft{% endif %}</span></div>
+        <div class="html-import-summary"><div><strong>{{ preview.sections|length }}</strong><span>Sections</span></div><div><strong>{{ preview_group_count }}</strong><span>Groups</span></div><div><strong>{{ preview_question_count }}</strong><span>Questions</span></div><div><strong>{{ preview.category|title }}</strong><span>Category</span></div></div>
+        <div class="html-import-preview-list">
+            {% for section in preview.sections %}
+            <article class="html-import-preview-item"><div class="html-import-preview-item__number">{{ section.order }}</div><div class="html-import-preview-item__body"><div class="html-import-preview-item__top"><h3>{{ section.section_type|title }} section</h3><span>{{ section.time_limit_minutes }} min &middot; {{ section.questions|length }} questions</span></div><p>{{ section.passage_text|default:"No passage text for this section."|truncatechars:220 }}</p><details><summary>Show imported questions</summary><div>{% for question in section.questions %}<span class="html-import-type">Q{{ question.order }} &middot; {{ question.question_type }}</span>{% endfor %}</div></details></div></article>
+            {% endfor %}
+        </div>
+        <form method="post">{% csrf_token %}<input type="hidden" name="import_payload" value="{{ import_payload }}"><div class="html-import-actions"><a href="{% url 'admin:exams_examset_import_excel' %}">&#8592; Upload again</a><button type="submit" class="default" name="confirm_import" value="1">Confirm import and save</button></div></form>
+    </section>
+    {% else %}
+    <form method="post" enctype="multipart/form-data" class="html-import-card html-import-form">{% csrf_token %}
+        <div class="html-import-form__main excel-import__guide">
+            <div class="html-import-card__heading"><div><p class="html-import__eyebrow">Before uploading</p><h2>Use the official workbook</h2><p>The importer rejects renamed sheets, changed headers, duplicate question numbers, missing answers, and invalid options before anything is saved.</p></div></div>
+            <ol class="excel-import-checklist"><li><span>1</span><div><strong>Complete Test and Sections</strong><small>Enter test details, timing, and passage content.</small></div></li><li><span>2</span><div><strong>Add optional Groups</strong><small>Build notes, tables, forms, or flow charts with [[question number]] placeholders.</small></div></li><li><span>3</span><div><strong>Add Questions</strong><small>Use one row per answer and connect grouped rows with group_key. Leave it blank for ordinary cards.</small></div></li></ol>
+            <a class="excel-import-template-card" href="{% url 'admin:exams_examset_excel_template' %}"><span>XL</span><div><strong>IELTS_Test_Import_Template.xlsx</strong><small>Download a fresh formatted workbook</small></div><b>&#8595;</b></a>
+        </div>
+        <aside class="html-import-form__aside">
+            <p class="html-import__eyebrow">Completed workbook</p><h2>Upload Excel file</h2><p class="html-import-form__intro">Your workbook is validated first. Nothing is saved until you confirm the preview.</p>
+            <div class="html-file-picker{% if form.excel_file.errors %} has-errors{% endif %}"><span class="html-file-picker__icon">XL</span>{{ form.excel_file }}<strong id="excel-file-picker-label">Choose an .xlsx file</strong><small>Official IELTS template &middot; maximum 5 MB</small></div>
+            {% for error in form.excel_file.errors %}<p class="html-import-errors">{{ error }}</p>{% endfor %}
+            <label class="html-import-publish">{{ form.publish }}<span><strong>{{ form.publish.label }}</strong><small>{{ form.publish.help_text }}</small></span></label>
+            <div class="html-import-safety"><strong>Safe import</strong><p>The test is built as native editable content. You can adjust every section and question after saving.</p></div>
+        </aside>
+        <footer class="html-import-form__footer"><a href="{% url 'admin:exams_examset_changelist' %}">Cancel</a><button type="submit" class="default">Upload and validate</button></footer>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block footer %}{{ block.super }}<script>document.addEventListener('DOMContentLoaded',function(){var input=document.getElementById('id_excel_file'),label=document.getElementById('excel-file-picker-label');if(input&&label)input.addEventListener('change',function(){label.textContent=input.files.length?input.files[0].name:'Choose an .xlsx file';});});</script>{% endblock %}

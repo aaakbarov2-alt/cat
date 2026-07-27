@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard | IELTS Mock{% endblock %}
+{% block meta_description %}Track your IELTS practice progress, skill accuracy, and recent mock tests.{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=20260717.3"><link rel="stylesheet" href="{% static 'css/progress-analytics.css' %}?v=20260718.1"><link rel="stylesheet" href="{% static 'css/daily-missions.css' %}?v=20260718.1">{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+    <div class="dashboard-layout">
+        <aside class="dashboard-sidebar" aria-label="Dashboard navigation">
+            <div class="dashboard-profile">
+                <span class="dashboard-avatar" aria-hidden="true">{{ request.user.username|first|upper }}</span>
+                <div>
+                    <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+                    <span>IELTS student</span>
+                </div>
+            </div>
+            <nav class="dashboard-menu">
+                <a class="is-active" href="{% url 'student_dashboard' %}" aria-current="page"><i class="bi bi-grid"></i>Overview</a>
+                <a href="{% url 'exam_list' %}"><i class="bi bi-journal-check"></i>All tests</a>
+                <a href="{% url 'exam_list' %}?skill=reading"><i class="bi bi-book"></i>Reading</a>
+                <a href="{% url 'exam_list' %}?skill=listening"><i class="bi bi-headphones"></i>Listening</a>
+                <a href="{% url 'exam_list' %}?skill=writing"><i class="bi bi-pencil"></i>Writing</a>
+                <a href="{% url 'exam_list' %}?skill=speaking"><i class="bi bi-mic"></i>Speaking</a>
+                <a href="{% url 'exam_list' %}?skill=full"><i class="bi bi-layers"></i>Full Mock Test</a>
+                <a href="#skills"><i class="bi bi-bar-chart"></i>Skill progress</a>
+                <a href="#analytics"><i class="bi bi-graph-up-arrow"></i>Progress analytics</a>
+                <a href="#recent-tests"><i class="bi bi-clock-history"></i>Test history</a>
+                <a href="{% url 'student_settings' %}"><i class="bi bi-person-gear"></i>Profile settings</a>
+                <a href="{% url 'contact' %}"><i class="bi bi-question-circle"></i>Support</a>
+            </nav>
+            <div class="dashboard-target">
+                <span>Target band</span>
+                <strong>{{ profile.target_band|floatformat:1 }}</strong>
+                <p>Keep practicing consistently to reach your target.</p>
+            </div>
+        </aside>
+
+        <section class="dashboard-content">
+            <header class="dashboard-heading">
+                <div>
+                    <span class="dashboard-eyebrow">Student dashboard</span>
+                    <h1>Welcome back, {{ request.user.first_name|default:request.user.username }}!</h1>
+                    <p>Here is an honest view of your IELTS practice progress.</p>
+                </div>
+                <a class="dashboard-primary-btn" href="{% url 'exam_list' %}">Browse tests <i class="bi bi-arrow-right"></i></a>
+            </header>
+
+            <div class="dashboard-stats" aria-label="Practice summary">
+                <article class="dashboard-stat-card">
+                    <span class="stat-icon stat-icon--blue"><i class="bi bi-journal-check"></i></span>
+                    <div><span>Tests completed</span><strong>{{ tests_taken }}</strong></div>
+                </article>
+                <article class="dashboard-stat-card">
+                    <span class="stat-icon stat-icon--green"><i class="bi bi-bullseye"></i></span>
+                    <div><span>Answer accuracy</span><strong>{{ accuracy }}%</strong></div>
+                </article>
+                <article class="dashboard-stat-card">
+                    <span class="stat-icon stat-icon--orange"><i class="bi bi-stopwatch"></i></span>
+                    <div><span>Average test time</span><strong>{{ avg_time }}</strong></div>
+                </article>
+                <article class="dashboard-stat-card">
+                    <span class="stat-icon stat-icon--purple"><i class="bi bi-fire"></i></span>
+                    <div><span>Current streak</span><strong>{{ profile.streak }} day{{ profile.streak|pluralize }}</strong></div>
+                </article>
+            </div>
+
+            <section class="daily-missions" aria-labelledby="missions-title">
+                <div class="daily-missions__heading"><div><span>Today’s study path</span><h2 id="missions-title">Daily missions</h2><p>Complete missions and claim bonus XP for consistent practice.</p></div><span><i class="bi bi-lightning-charge-fill"></i> Resets daily</span></div>
+                <div class="daily-missions__grid">
+                    {% for mission in daily_missions %}
+                    <article class="daily-mission{% if mission.claimed %} is-claimed{% elif mission.complete %} is-complete{% endif %}">
+                        <span class="daily-mission__icon"><i class="bi {{ mission.icon }}"></i></span>
+                        <div class="daily-mission__body"><div><h3>{{ mission.title }}</h3><b>+{{ mission.xp }} XP</b></div><p>{{ mission.description }}</p><div class="daily-mission__progress"><span><i style="width:{{ mission.progress_percent }}%"></i></span><small>{{ mission.progress }} / {{ mission.target }}</small></div></div>
+                        {% if mission.claimed %}<span class="daily-mission__claimed"><i class="bi bi-check2"></i> Claimed</span>{% elif mission.complete %}<form method="post" action="{% url 'claim_daily_mission' mission.key %}">{% csrf_token %}<button type="submit">Claim XP <i class="bi bi-arrow-right"></i></button></form>{% else %}<span class="daily-mission__pending">In progress</span>{% endif %}
+                    </article>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <div class="dashboard-grid">
+                <section class="dashboard-panel" id="skills">
+                    <div class="panel-heading">
+                        <div><span>Performance</span><h2>Skills overview</h2></div>
+                        <small>Based on graded answers</small>
+                    </div>
+                    <div class="skills-list">
+                        {% for skill in skills %}
+                        <div class="skill-row">
+                            <span class="skill-icon skill-icon--{{ skill.tone }}"><i class="bi {{ skill.icon }}"></i></span>
+                            <div class="skill-details">
+                                <div><strong>{{ skill.name }}</strong><span>{{ skill.value }}%</span></div>
+                                <div class="skill-track" aria-label="{{ skill.name }} accuracy: {{ skill.value }} percent">
+                                    <span class="skill-fill skill-fill--{{ skill.tone }}" style="width: {{ skill.value }}%"></span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <aside class="dashboard-panel study-panel">
+                    <div class="panel-heading"><div><span>Study plan</span><h2>Your goals</h2></div></div>
+                    <div class="goal-item"><span><i class="bi bi-clock"></i>Daily practice</span><strong>{{ profile.daily_goal }} minutes</strong></div>
+                    <div class="goal-item"><span><i class="bi bi-lightning-charge"></i>Experience</span><strong>{{ profile.xp }} / {{ xp_goal }} XP</strong></div>
+                    <div class="xp-track" aria-label="Experience progress: {{ xp_progress }} percent"><span style="width: {{ xp_progress }}%"></span></div>
+                    <p class="goal-note">Your XP reflects activity recorded on this account.</p>
+                    <a class="dashboard-secondary-btn" href="{% url 'exam_list' %}">Continue practicing</a>
+                </aside>
+            </div>
+
+            <section class="analytics-section" id="analytics" aria-labelledby="analytics-title">
+                <div class="analytics-heading"><div><span>Progress analytics</span><h2 id="analytics-title">Learn from every attempt</h2><p>These insights are calculated from your completed tests and graded answers.</p></div><span class="analytics-study-time"><i class="bi bi-clock-history"></i> {{ total_study_minutes }} minute{{ total_study_minutes|pluralize }} studied</span></div>
+                <div class="analytics-grid">
+                    <article class="analytics-card analytics-card--trend">
+                        <div class="analytics-card__heading"><div><span>Performance trend</span><h3>Recent results</h3></div>{% if trend_change is not None %}<b class="{% if trend_change >= 0 %}is-positive{% else %}is-negative{% endif %}"><i class="bi bi-{% if trend_change >= 0 %}arrow-up-right{% else %}arrow-down-right{% endif %}"></i> {{ trend_change|floatformat:0 }}%</b>{% endif %}</div>
+                        {% if trend_attempts %}<div class="trend-chart" role="img" aria-label="Recent test performance chart">{% for point in trend_attempts %}<div class="trend-chart__item" title="{{ point.title }}: {{ point.display }}"><span class="trend-chart__value">{{ point.display }}</span><div class="trend-chart__bar-wrap"><span class="trend-chart__bar" style="height: {{ point.height }}%"></span></div><small>{{ point.label }}</small></div>{% endfor %}</div>{% else %}<div class="analytics-empty"><i class="bi bi-graph-up"></i><p>Complete graded tests to see your performance trend.</p></div>{% endif %}
+                    </article>
+                    <article class="analytics-card">
+                        <div class="analytics-card__heading"><div><span>Question types</span><h3>Accuracy breakdown</h3></div><i class="bi bi-pie-chart"></i></div>
+                        {% if question_type_accuracy %}<div class="question-type-list">{% for item in question_type_accuracy %}<div><span>{{ item.name }}</span><strong>{{ item.value }}%</strong><div><i style="width:{{ item.value }}%"></i></div></div>{% endfor %}</div>{% else %}<div class="analytics-empty"><i class="bi bi-ui-checks-grid"></i><p>Objective answers will appear here once they are graded.</p></div>{% endif %}
+                    </article>
+                    <article class="analytics-card">
+                        <div class="analytics-card__heading"><div><span>Focus area</span><h3>Where to improve</h3></div><i class="bi bi-bullseye"></i></div>
+                        {% if weakest_skill %}<div class="weak-area"><span class="skill-icon skill-icon--{{ weakest_skill.tone }}"><i class="bi {{ weakest_skill.icon }}"></i></span><div><strong>{{ weakest_skill.name }}</strong><p>{{ weakest_skill.value }}% current score</p></div></div><p class="weak-area__note">Prioritise {{ weakest_skill.name|lower }} practice to lift your overall result.</p><a href="{% url 'exam_list' %}?skill={{ weakest_skill.name|lower }}">Practice {{ weakest_skill.name }} <i class="bi bi-arrow-right"></i></a>{% else %}<div class="analytics-empty"><i class="bi bi-lightbulb"></i><p>Your focus area will appear after graded answers are available.</p></div>{% endif %}
+                    </article>
+                    <article class="analytics-card">
+                        <div class="analytics-card__heading"><div><span>Consistency</span><h3>Study streak</h3></div><strong class="streak-total">{{ profile.streak }} <small>day{{ profile.streak|pluralize }}</small></strong></div>
+                        <div class="streak-week" aria-label="Last seven days of completed practice">{% for day in streak_days %}<span class="{% if day.active %}is-active{% endif %}"><i class="bi bi-check"></i><small>{{ day.label }}</small></span>{% endfor %}</div><p class="streak-note">Complete a test today to keep your practice habit active.</p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="dashboard-panel recent-panel" id="recent-tests">
+                <div class="panel-heading">
+                    <div><span>History</span><h2>Recent tests</h2></div>
+                    <a href="{% url 'exam_list' %}">View all <i class="bi bi-arrow-right"></i></a>
+                </div>
+                {% if recent_attempts %}
+                <div class="recent-list">
+                    {% for item in recent_attempts %}
+                    <article class="recent-item">
+                        <span class="recent-icon"><i class="bi bi-file-earmark-text"></i></span>
+                        <div class="recent-main"><strong>{{ item.attempt.exam_set.title }}</strong><span>Completed {{ item.attempt.submitted_at|date:"M j, Y" }}</span></div>
+                        <div class="recent-meta"><span>Time</span><strong>{{ item.duration }}</strong></div>
+                        <div class="recent-meta"><span>Score</span><strong>{% if item.score is not None %}{{ item.score }}%{% else %}Pending{% endif %}</strong></div>
+                        <a class="recent-link" href="{% url 'results' item.attempt.id %}" aria-label="View results for {{ item.attempt.exam_set.title }}"><i class="bi bi-chevron-right"></i></a>
+                    </article>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="dashboard-empty">
+                    <span><i class="bi bi-clipboard2-check"></i></span>
+                    <h3>No completed tests yet</h3>
+                    <p>Your scores and test history will appear here after your first completed mock test.</p>
+                    <a class="dashboard-primary-btn" href="{% url 'exam_list' %}">Explore available tests</a>
+                </div>
+                {% endif %}
+            </section>
+        </section>
+    </div>
+</div>
+{% endblock %}

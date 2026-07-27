@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}FAQ | IELTS Mock{% endblock %}
+{% block content %}
+<section class="info-page"><div class="container info-page__inner"><p class="info-page__eyebrow">Support</p><h1>Frequently Asked Questions</h1><p class="info-page__lead">Everything you need to know before starting your IELTS practice.</p><div class="info-page__cards">
+  <details open><summary>How do I start a mock test?</summary><p>Create a free account, open the Exams page, and select an available mock test.</p></details>
+  <details><summary>Can I use IELTS Mock on my phone?</summary><p>Yes. The public website and student experience are designed for desktop, tablet, and mobile screens.</p></details>
+  <details><summary>When will I receive my results?</summary><p>Automatically graded questions are scored immediately. Writing and Speaking responses may require manual review.</p></details>
+  <details><summary>Is this an official IELTS service?</summary><p>No. IELTS Mock is an independent practice platform. Practice results do not replace or guarantee an official IELTS result.</p></details>
+  <details><summary>How can I contact support?</summary><p>Email <a href="mailto:{{ site_support_email }}">{{ site_support_email }}</a> and include the email address connected to your account.</p></details>
+</div></div></section>
+{% include "components/footer.html" %}
+{% endblock %}

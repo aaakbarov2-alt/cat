@@ -1,0 +1,24 @@
+/* Make nav links bigger and bolder */
+.navbar-nav .nav-link {
+  font-size: 20px;       /* larger text */
+  font-weight: 600;      /* semi-bold */
+  color: #111827;        /* dark gray */
+  padding: 12px 18px;    /* more clickable area */
+  transition: color .2s;
+}
+
+/* Hover effect */
+.navbar-nav .nav-link:hover {
+  color: #4F46E5;        /* highlight color */
+}
+.navbar {
+  background-color: #fff !important;   /* keep navbar white */
+  border-bottom: 1px solid rgba(0,0,0,0.1); /* barely visible line */
+}
+
+
+
+.navbar .btn-light:hover {
+  background: #ffe082;
+  color: #111;
+}

@@ -1,0 +1,33 @@
+.catalogue-grid--compact {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.catalogue-compact-body h3 {
+    font-size: .9rem;
+    line-height: 1.35;
+}
+
+.catalogue-compact-tags > span,
+.catalogue-compact-tags > b {
+    font-size: .62rem;
+}
+
+.catalogue-compact-tags em {
+    font-size: .64rem;
+}
+
+.catalogue-compact-body p {
+    font-size: .68rem;
+}
+
+@media (max-width: 900px) {
+    .catalogue-grid--compact {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 520px) {
+    .catalogue-grid--compact {
+        grid-template-columns: 1fr;
+    }
+}
